@@ -66,7 +66,7 @@ npm test
 curl -i -X POST http://localhost:3000/books \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "1",
+    "id": 1,
     "title": "Dune",
     "author": "Frank Herbert",
     "genre": "Sci-fi",
