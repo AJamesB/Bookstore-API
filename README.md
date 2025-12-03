@@ -1,5 +1,8 @@
 # Bookstore API
 
+> [!NOTE]
+> This is a simplified coding exercise implementation. It is not production-ready code.
+
 A small TypeScript + Express API implementing a multi-layered architecture:
 
 - **Routes**
@@ -53,8 +56,6 @@ npm test
 - List all books  
 - Update book  
 - Delete book  
-- Centralised error-handling middleware  
-- Improved validation with custom error classes  
 - Calculate discounted price for a genre
 
 ---
