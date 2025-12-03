@@ -1,0 +1,37 @@
+{
+  "name": "bookstore-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "test": "jest --config ./jest.config.cjs --runInBand"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AJamesB/Bookstore-API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AJamesB/Bookstore-API/issues"
+  },
+  "homepage": "https://github.com/AJamesB/Bookstore-API#readme",
+  "dependencies": {
+    "better-sqlite3": "^12.5.0",
+    "express": "^5.2.1",
+    "kysely": "^0.28.8"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.6",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.21.0"
+  },
+  "type": "module"
+}
