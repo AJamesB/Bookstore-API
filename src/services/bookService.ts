@@ -12,13 +12,13 @@ export async function createBook(bookData: BookCreateDTO): Promise<Book> {
 
 function validateBookData(bookData: BookCreateDTO): void {
   if (!bookData.id || typeof bookData.id !== "number") {
-    throw new Error("Invalid id");
+    throw new Error("Invalid or missing id");
   }
   if (!bookData.title || typeof bookData.title !== "string") {
-    throw new Error("Invalid title");
+    throw new Error("Invalid or missing title");
   }
   if (!bookData.author || typeof bookData.author !== "string") {
-    throw new Error("Invalid author");
+    throw new Error("Invalid or missing author");
   }
   // Add more validation as needed
 }

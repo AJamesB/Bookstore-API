@@ -9,13 +9,15 @@ app.get("/", (req, res) => {
   res.send("Bookstore API is running");
 });
 
-app.use("/", bookRoutes); // bookRoutes already defines /books prefix
+app.use("/", bookRoutes);
 
 export default app; // for tests
 
-// Start the server only when this file is executed directly. Tests import the
-// `app` without starting the HTTP server.
-const isMainModule = process.argv[1]?.endsWith('app.ts') || process.argv[1]?.endsWith('app.js');
-if (isMainModule) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start the server only when this file is executed directly.
+// Tests import the`app` without starting the HTTP server.
+if (process.env.NODE_ENV !== "test") {
+  const PORT = process.env.PORT ?? 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
