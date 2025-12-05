@@ -20,5 +20,16 @@ function validateBookData(bookData: BookCreateDTO): void {
   if (!bookData.author || typeof bookData.author !== "string") {
     throw new Error("Invalid or missing author");
   }
-  // Add more validation as needed
+}
+
+export async function getBookById(bookId: number): Promise<Book> {
+  if (isNaN(bookId) || bookId <= 0) {
+    throw new Error("Invalid book ID");
+  }
+
+  const book = await bookRepository.findById(bookId);
+  if (!book) {
+    throw new Error(`Book with ID ${bookId} not found`);
+  }
+  return book;
 }

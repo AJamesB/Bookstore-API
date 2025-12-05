@@ -19,3 +19,24 @@ export const createBook = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const getBookById = async (req: Request, res: Response) => {
+  try {
+    const bookId = parseInt(req.params.id, 10);
+    const book = await bookService.getBookById(bookId);
+    res.status(200).json(book);
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    // If the book is not found, return 404 Not Found
+    if (errorMessage.includes("Invalid")) {
+      res.status(400).json({ error: errorMessage });
+    } else if (errorMessage.includes("not found")) {
+      res.status(404).json({ error: errorMessage });
+    } else {
+      // Otherwise, return 500 Internal Server Error
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+};

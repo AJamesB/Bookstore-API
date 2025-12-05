@@ -13,3 +13,14 @@ test("POST /books creates a book", async () => {
   expect(res.body).toHaveProperty("id", 1);
   expect(res.body).toHaveProperty("createdAt");
 });
+
+test("GET /books/:id retrieves a book", async () => {
+  const payload = { id: 1, title: "T", author: "A" };
+  await request(app).post("/books").send(payload);
+
+  const res = await request(app).get("/books/1");
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty("id", 1);
+  expect(res.body).toHaveProperty("title", "T");
+  expect(res.body).toHaveProperty("author", "A");
+});

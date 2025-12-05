@@ -9,7 +9,7 @@ app.get("/", (req, res) => {
   res.send("Bookstore API is running");
 });
 
-app.use("/", bookRoutes);
+app.use("/", bookRoutes); // bookRoutes defines /books routes
 
 export default app; // for tests
 
