@@ -75,6 +75,11 @@ curl -i -X POST http://localhost:3000/books \
   }'
 ```
 
+### Find a Book by ID
+```bash
+curl -i -X POST http://localhost:3000/books/1
+```
+
 ---
 
 ## Notes
