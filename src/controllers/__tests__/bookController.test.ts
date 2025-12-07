@@ -58,3 +58,33 @@ test("PATCH /books/:id returns 400 for invalid data", async () => {
   expect(res.status).toBe(400);
   expect(res.body).toHaveProperty("error");
 });
+
+test("DELETE /books/:id deletes a book", async () => {
+  const payload = { id: 1, title: "Book to Delete", author: "Author" };
+  await request(app).post("/books").send(payload);
+
+  const res = await request(app).delete("/books/1");
+  
+  expect(res.status).toBe(204);
+  expect(res.body).toEqual({});
+
+  // Verify the book is actually deleted
+  const getRes = await request(app).get("/books/1");
+  expect(getRes.status).toBe(404);
+});
+
+test("DELETE /books/:id returns 404 for non-existent book", async () => {
+  const res = await request(app).delete("/books/999");
+  
+  expect(res.status).toBe(404);
+  expect(res.body).toHaveProperty("error");
+  expect(res.body.error).toContain("not found");
+});
+
+test("DELETE /books/:id returns 400 for invalid id", async () => {
+  const res = await request(app).delete("/books/invalid");
+  
+  expect(res.status).toBe(400);
+  expect(res.body).toHaveProperty("error");
+  expect(res.body.error).toContain("Invalid");
+});

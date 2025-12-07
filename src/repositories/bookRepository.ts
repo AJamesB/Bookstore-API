@@ -38,6 +38,13 @@ export async function addBook(bookData: BookCreateDTO): Promise<Book> {
   return newBook;
 }
 
+/**
+ * updateById - update the book with the given id
+ *
+ * - if no book with the id exists, returns null
+ * - updates only the fields provided in updateData
+ * - preserves createdAt and id
+ */
 export async function updateById(
   id: Book["id"],
   updateData: Partial<Book>,
@@ -57,6 +64,21 @@ export async function updateById(
 
   books[index] = updatedBook;
   return { ...updatedBook };
+}
+
+/**
+ * deleteById - delete the book with the given id
+ *
+ * - returns true if a book was deleted, false if no book with the id exists
+ */
+export async function deleteById(id: Book["id"]): Promise<boolean> {
+  const index = books.findIndex((b) => b.id === id);
+  if (index === -1) {
+    return false;
+  }
+
+  books.splice(index, 1);
+  return true;
 }
 
 /**

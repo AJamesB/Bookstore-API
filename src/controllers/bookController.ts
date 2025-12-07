@@ -60,3 +60,22 @@ export const updateBook = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const deleteBook = async (req: Request, res: Response) => {
+  try {
+    const bookId = parseInt(req.params.id, 10);
+    await bookService.deleteBook(bookId);
+    res.status(204).send();
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    if (errorMessage.includes("Invalid")) {
+      res.status(400).json({ error: errorMessage });
+    } else if (errorMessage.includes("not found")) {
+      res.status(404).json({ error: errorMessage });
+    } else {
+      res.status(500).json({ error: errorMessage });
+    }
+  }
+};

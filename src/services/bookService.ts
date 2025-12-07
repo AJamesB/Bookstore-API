@@ -43,7 +43,7 @@ export async function updateBook(
   if (!updateData || Object.keys(updateData).length === 0)
     throw new Error("No update data provided");
 
-  if (("id" in updateData) || ("createdAt" in (updateData as any))) {
+  if ("id" in updateData || "createdAt" in (updateData as any)) {
     throw new Error("Cannot update id or createdAt");
   }
   validateUpdateData(updateData);
@@ -68,4 +68,13 @@ function validateUpdateData(updateData: Partial<BookCreateDTO>): void {
 
   if (updateData.price && typeof updateData.price !== "number")
     throw new Error("Invalid price");
+}
+
+export async function deleteBook(bookId: number): Promise<void> {
+  if (isNaN(bookId) || bookId <= 0) throw new Error("Invalid book ID");
+
+  const existingBook = await bookRepository.findById(bookId);
+  if (!existingBook) throw new Error(`Book with ID ${bookId} not found`);
+
+  await bookRepository.deleteById(bookId);
 }

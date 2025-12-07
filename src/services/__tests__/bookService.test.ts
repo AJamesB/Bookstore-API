@@ -125,3 +125,33 @@ test("updateBook throws on invalid update data types", async () => {
   await expect(bookService.updateBook(1, { genre: 789 } as any)).rejects.toThrow("Invalid genre");
   await expect(bookService.updateBook(1, { price: "not a number" } as any)).rejects.toThrow("Invalid price");
 });
+
+test("deleteBook calls repo to delete book", async () => {
+  const existingBook = {
+    id: 1,
+    title: "Book to Delete",
+    author: "Author",
+    createdAt: "2025-12-03T00:00:00.000Z",
+  };
+
+  (bookRepo.findById as jest.Mock).mockResolvedValue(existingBook);
+  (bookRepo.deleteById as jest.Mock).mockResolvedValue(true);
+
+  await bookService.deleteBook(1);
+
+  expect(bookRepo.findById).toHaveBeenCalledWith(1);
+  expect(bookRepo.deleteById).toHaveBeenCalledWith(1);
+});
+
+test("deleteBook throws on invalid id", async () => {
+  await expect(bookService.deleteBook(NaN)).rejects.toThrow("Invalid book ID");
+  await expect(bookService.deleteBook(0)).rejects.toThrow("Invalid book ID");
+  await expect(bookService.deleteBook(-1)).rejects.toThrow("Invalid book ID");
+});
+
+test("deleteBook throws when book not found", async () => {
+  (bookRepo.findById as jest.Mock).mockResolvedValue(null);
+
+  await expect(bookService.deleteBook(999)).rejects.toThrow("Book with ID 999 not found");
+  expect(bookRepo.deleteById).not.toHaveBeenCalled();
+});

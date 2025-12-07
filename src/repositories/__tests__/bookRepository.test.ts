@@ -1,4 +1,4 @@
-import { addBook, findById, updateById, _clearStoreForTests } from "../bookRepository";
+import { addBook, findById, updateById, deleteById, _clearStoreForTests } from "../bookRepository";
 import { BookCreateDTO } from "../../models/bookModel";
 
 beforeEach(() => {
@@ -88,4 +88,45 @@ test("updateById preserves id", async () => {
 test("updateById returns null for non-existent book", async () => {
   const result = await updateById(999, { title: "Updated" });
   expect(result).toBeNull();
+});
+
+test("deleteById deletes a book and returns true", async () => {
+  const payload = { id: 1, title: "Book to Delete", author: "Author" };
+  await addBook(payload);
+
+  const result = await deleteById(1);
+
+  expect(result).toBe(true);
+
+  // Verify the book is actually deleted
+  const found = await findById(1);
+  expect(found).toBeNull();
+});
+
+test("deleteById returns false for non-existent book", async () => {
+  const result = await deleteById(999);
+  expect(result).toBe(false);
+});
+
+test("deleteById removes only the specified book", async () => {
+  const book1 = { id: 1, title: "Book 1", author: "Author 1" };
+  const book2 = { id: 2, title: "Book 2", author: "Author 2" };
+  const book3 = { id: 3, title: "Book 3", author: "Author 3" };
+  
+  await addBook(book1);
+  await addBook(book2);
+  await addBook(book3);
+
+  const result = await deleteById(2);
+
+  expect(result).toBe(true);
+
+  // Verify book 2 is deleted but others remain
+  const found1 = await findById(1);
+  const found2 = await findById(2);
+  const found3 = await findById(3);
+
+  expect(found1).not.toBeNull();
+  expect(found2).toBeNull();
+  expect(found3).not.toBeNull();
 });
