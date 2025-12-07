@@ -20,6 +20,9 @@ A small TypeScript + Express API implementing a multi-layered architecture:
 - In-memory data storage with:
   - ID uniqueness validation
   - ISO `createdAt` timestamps
+- **Find Book by ID** endpoint (`GET /books/:id`)
+- **Update Book by ID** endpoint (`PATCH /books/:id`)
+- **Delete Book by ID** endpoint (`DELETE /books/:id`)
 
 ---
 
@@ -52,10 +55,6 @@ npm test
 
 ## Future Work (Not Yet Implemented)
 
-- Find book by ID  
-- List all books  
-- Update book  
-- Delete book  
 - Calculate discounted price for a genre
 
 ---
@@ -88,6 +87,11 @@ curl -i -X PATCH http://localhost:3000/books/1 \
     "title": "Dune (Updated Edition)",
     "price": 250
   }'
+```
+
+### Delete a Book by ID
+```bash
+curl -i -X DELETE http://localhost:3000/books/1
 ```
 
 ---
