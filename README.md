@@ -77,11 +77,17 @@ curl -i -X POST http://localhost:3000/books \
 
 ### Find a Book by ID
 ```bash
-curl -i -X POST http://localhost:3000/books/1
+curl -i -X GET http://localhost:3000/books/1
+```
+
+### Update a Book by ID
+```bash
+curl -i -X PATCH http://localhost:3000/books/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Dune (Updated Edition)",
+    "price": 250
+  }'
 ```
 
 ---
-
-## Notes
-
-This README will be expanded as additional features are implemented.
