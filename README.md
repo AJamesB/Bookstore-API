@@ -18,11 +18,15 @@ A small TypeScript + Express API implementing a multi-layered architecture:
 
 - **Create Book** endpoint (`POST /books`)
 - In-memory data storage with:
-  - ID uniqueness validation
-  - ISO `createdAt` timestamps
+    - ID uniqueness validation
+    - ISO `createdAt` timestamps
 - **Find Book by ID** endpoint (`GET /books/:id`)
 - **Update Book by ID** endpoint (`PATCH /books/:id`)
 - **Delete Book by ID** endpoint (`DELETE /books/:id`)
+- Unit tests for:
+    - Controller layer
+    - Service layer
+    - Repository layer
 
 ---
 
