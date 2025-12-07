@@ -38,6 +38,27 @@ export async function addBook(bookData: BookCreateDTO): Promise<Book> {
   return newBook;
 }
 
+export async function updateById(
+  id: Book["id"],
+  updateData: Partial<Book>,
+): Promise<Book | null> {
+  const index = books.findIndex((b) => b.id === id);
+  if (index === -1) {
+    return null;
+  }
+
+  // Update the book while preserving the original createdAt and id
+  const updatedBook = {
+    ...books[index],
+    ...updateData,
+    id: books[index].id,
+    createdAt: books[index].createdAt,
+  };
+
+  books[index] = updatedBook;
+  return { ...updatedBook };
+}
+
 /**
  * Utility to reset store between tests
  */

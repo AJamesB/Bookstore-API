@@ -47,3 +47,81 @@ test("getBookById throws when book not found", async () => {
 
   await expect(bookService.getBookById(999)).rejects.toThrow("Book with ID 999 not found");
 });
+
+test("updateBook calls repo and returns updated book", async () => {
+  const existingBook = {
+    id: 1,
+    title: "Original",
+    author: "Author",
+    createdAt: "2025-12-03T00:00:00.000Z",
+  };
+  const updateData = { title: "Updated Title", price: 29.99 };
+  const updatedBook = {
+    ...existingBook,
+    ...updateData,
+  };
+
+  (bookRepo.findById as jest.Mock).mockResolvedValue(existingBook);
+  (bookRepo.updateById as jest.Mock).mockResolvedValue(updatedBook);
+
+  const result = await bookService.updateBook(1, updateData);
+  
+  expect(bookRepo.findById).toHaveBeenCalledWith(1);
+  expect(bookRepo.updateById).toHaveBeenCalledWith(1, updatedBook);
+  expect(result).toEqual(updatedBook);
+});
+
+test("updateBook throws on invalid id", async () => {
+  await expect(bookService.updateBook(NaN, { title: "Test" })).rejects.toThrow("Invalid book ID");
+  await expect(bookService.updateBook(0, { title: "Test" })).rejects.toThrow("Invalid book ID");
+  await expect(bookService.updateBook(-1, { title: "Test" })).rejects.toThrow("Invalid book ID");
+});
+
+test("updateBook throws when book not found", async () => {
+  (bookRepo.findById as jest.Mock).mockResolvedValue(null);
+
+  await expect(bookService.updateBook(999, { title: "Updated" })).rejects.toThrow("Book with ID 999 not found");
+});
+
+test("updateBook throws when no update data provided", async () => {
+  const existingBook = {
+    id: 1,
+    title: "Original",
+    author: "Author",
+    createdAt: "2025-12-03T00:00:00.000Z",
+  };
+
+  (bookRepo.findById as jest.Mock).mockResolvedValue(existingBook);
+
+  await expect(bookService.updateBook(1, {})).rejects.toThrow("No update data provided");
+});
+
+test("updateBook throws when trying to update id or createdAt", async () => {
+  const existingBook = {
+    id: 1,
+    title: "Original",
+    author: "Author",
+    createdAt: "2025-12-03T00:00:00.000Z",
+  };
+
+  (bookRepo.findById as jest.Mock).mockResolvedValue(existingBook);
+
+  await expect(bookService.updateBook(1, { id: 2 } as any)).rejects.toThrow("Cannot update id or createdAt");
+  await expect(bookService.updateBook(1, { createdAt: "2025-12-07T00:00:00.000Z" } as any)).rejects.toThrow("Cannot update id or createdAt");
+});
+
+test("updateBook throws on invalid update data types", async () => {
+  const existingBook = {
+    id: 1,
+    title: "Original",
+    author: "Author",
+    createdAt: "2025-12-03T00:00:00.000Z",
+  };
+
+  (bookRepo.findById as jest.Mock).mockResolvedValue(existingBook);
+
+  await expect(bookService.updateBook(1, { title: 123 } as any)).rejects.toThrow("Invalid title");
+  await expect(bookService.updateBook(1, { author: 456 } as any)).rejects.toThrow("Invalid author");
+  await expect(bookService.updateBook(1, { genre: 789 } as any)).rejects.toThrow("Invalid genre");
+  await expect(bookService.updateBook(1, { price: "not a number" } as any)).rejects.toThrow("Invalid price");
+});
