@@ -1,4 +1,4 @@
-import type { Book, BookCreateDTO } from "../models/bookModel";
+import type { Book, BookCreateDTO, BookFilter } from "../models/bookModel";
 
 const books: Book[] = [];
 
@@ -81,14 +81,38 @@ export async function deleteById(id: Book["id"]): Promise<boolean> {
   return true;
 }
 
+export async function findByFilter(filter: BookFilter): Promise<Book[]> {
+  const all = [...books];
+
+  return all.filter((b) => {
+    // genre exact, case-insensitive
+    if (filter.genre) {
+      if (!b.genre) return false;
+      if (b.genre.toLowerCase() !== filter.genre.toLowerCase()) return false;
+    }
+
+    // title partial, case-insensitive
+    if (filter.title) {
+      if (!b.title) return false;
+      if (!b.title.toLowerCase().includes(filter.title.toLowerCase()))
+        return false;
+    }
+
+    // author partial, case-insensitive
+    if (filter.author) {
+      if (!b.author) return false;
+      if (!b.author.toLowerCase().includes(filter.author.toLowerCase()))
+        return false;
+    }
+
+    // all checks passed
+    return true;
+  });
+}
+
 /**
  * Utility to reset store between tests
  */
 export function _clearStoreForTests(): void {
   books.length = 0;
-}
-
-export async function findAll(): Promise<Book[]> {
-  // return a shallow copy to avoid accidental external mutation
-  return [...books];
 }

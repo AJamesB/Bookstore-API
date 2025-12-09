@@ -1,4 +1,4 @@
-import { addBook, findById, updateById, deleteById, _clearStoreForTests } from "../bookRepository";
+import { addBook, findById, updateById, deleteById, findByFilter, _clearStoreForTests } from "../bookRepository";
 import { BookCreateDTO } from "../../models/bookModel";
 
 beforeEach(() => {
@@ -129,4 +129,109 @@ test("deleteById removes only the specified book", async () => {
   expect(found1).not.toBeNull();
   expect(found2).toBeNull();
   expect(found3).not.toBeNull();
+});
+
+test("findByFilter returns all books when filter is empty", async () => {
+  const book1 = { id: 1, title: "Book 1", author: "Author 1", genre: "Fiction" };
+  const book2 = { id: 2, title: "Book 2", author: "Author 2", genre: "Non-Fiction" };
+  
+  await addBook(book1);
+  await addBook(book2);
+
+  const result = await findByFilter({});
+
+  expect(result).toHaveLength(2);
+  expect(result[0].id).toBe(1);
+  expect(result[1].id).toBe(2);
+});
+
+test("findByFilter filters by genre (exact, case-insensitive)", async () => {
+  const book1 = { id: 1, title: "Dune", author: "Frank Herbert", genre: "Sci-Fi" };
+  const book2 = { id: 2, title: "1984", author: "George Orwell", genre: "Dystopian" };
+  const book3 = { id: 3, title: "Foundation", author: "Isaac Asimov", genre: "Sci-Fi" };
+  
+  await addBook(book1);
+  await addBook(book2);
+  await addBook(book3);
+
+  const result = await findByFilter({ genre: "sci-fi" }); // lowercase should match
+
+  expect(result).toHaveLength(2);
+  expect(result[0].genre).toBe("Sci-Fi");
+  expect(result[1].genre).toBe("Sci-Fi");
+});
+
+test("findByFilter filters by title (partial, case-insensitive)", async () => {
+  const book1 = { id: 1, title: "The Great Gatsby", author: "F. Scott Fitzgerald" };
+  const book2 = { id: 2, title: "Great Expectations", author: "Charles Dickens" };
+  const book3 = { id: 3, title: "To Kill a Mockingbird", author: "Harper Lee" };
+  
+  await addBook(book1);
+  await addBook(book2);
+  await addBook(book3);
+
+  const result = await findByFilter({ title: "great" });
+
+  expect(result).toHaveLength(2);
+  expect(result.find(b => b.id === 1)).toBeDefined();
+  expect(result.find(b => b.id === 2)).toBeDefined();
+});
+
+test("findByFilter filters by author (partial, case-insensitive)", async () => {
+  const book1 = { id: 1, title: "Dune", author: "Frank Herbert" };
+  const book2 = { id: 2, title: "The Hobbit", author: "J.R.R. Tolkien" };
+  const book3 = { id: 3, title: "Neuromancer", author: "William Gibson" };
+  
+  await addBook(book1);
+  await addBook(book2);
+  await addBook(book3);
+
+  const result = await findByFilter({ author: "HERBERT" }); // uppercase should match
+
+  expect(result).toHaveLength(1);
+  expect(result[0].author).toBe("Frank Herbert");
+});
+
+test("findByFilter filters by multiple criteria (AND logic)", async () => {
+  const book1 = { id: 1, title: "Dune", author: "Frank Herbert", genre: "Sci-Fi" };
+  const book2 = { id: 2, title: "Foundation", author: "Isaac Asimov", genre: "Sci-Fi" };
+  const book3 = { id: 3, title: "The Gods Themselves", author: "Isaac Asimov", genre: "Sci-Fi" };
+  
+  await addBook(book1);
+  await addBook(book2);
+  await addBook(book3);
+
+  const result = await findByFilter({ genre: "Sci-Fi", author: "asimov" });
+
+  expect(result).toHaveLength(2);
+  expect(result[0].author).toBe("Isaac Asimov");
+  expect(result[1].author).toBe("Isaac Asimov");
+});
+
+test("findByFilter returns empty array when no books match", async () => {
+  const book1 = { id: 1, title: "Book 1", author: "Author 1", genre: "Fiction" };
+  await addBook(book1);
+
+  const result = await findByFilter({ genre: "Fantasy" });
+
+  expect(result).toHaveLength(0);
+});
+
+test("findByFilter returns empty array when there are no books", async () => {
+  const result = await findByFilter({});
+
+  expect(result).toHaveLength(0);
+});
+
+test("findByFilter excludes books without the optional field being filtered", async () => {
+  const book1 = { id: 1, title: "Book 1", author: "Author 1", genre: "Fiction" };
+  const book2 = { id: 2, title: "Book 2", author: "Author 2" }; // no genre
+  
+  await addBook(book1);
+  await addBook(book2);
+
+  const result = await findByFilter({ genre: "Fiction" });
+
+  expect(result).toHaveLength(1);
+  expect(result[0].id).toBe(1);
 });

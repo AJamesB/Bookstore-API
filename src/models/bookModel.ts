@@ -7,4 +7,16 @@ export interface Book {
   createdAt?: string; // ISO date if you want
 }
 
-export type BookCreateDTO = Omit<Book, "createdAt">; // id is manually assigned, not auto-generated
+export type BookCreateDTO = Omit<Book, "createdAt">;
+
+export type BookFilter = {
+  genre?: string;
+  title?: string;
+  author?: string;
+};
+
+export type DiscountResult = {
+  genre: string;
+  discount_percentage: number;
+  total_discounted_price: number;
+};

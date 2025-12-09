@@ -155,3 +155,127 @@ test("deleteBook throws when book not found", async () => {
   await expect(bookService.deleteBook(999)).rejects.toThrow("Book with ID 999 not found");
   expect(bookRepo.deleteById).not.toHaveBeenCalled();
 });
+
+test("listBooks calls repo with filter and returns books", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Book 1", author: "Author 1", genre: "Fiction", createdAt: "2025-12-03T00:00:00.000Z" },
+    { id: 2, title: "Book 2", author: "Author 2", genre: "Fiction", createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const filter = { genre: "Fiction" };
+  const result = await bookService.listBooks(filter);
+
+  expect(bookRepo.findByFilter).toHaveBeenCalledWith(filter);
+  expect(result).toEqual(fakeBooks);
+  expect(result).toHaveLength(2);
+});
+
+test("listBooks calls repo with empty filter when no filter provided", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Book 1", author: "Author 1", createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const result = await bookService.listBooks();
+
+  expect(bookRepo.findByFilter).toHaveBeenCalledWith({});
+  expect(result).toEqual(fakeBooks);
+});
+
+test("listBooks returns empty array when no books match", async () => {
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue([]);
+
+  const result = await bookService.listBooks({ genre: "NonExistent" });
+
+  expect(result).toEqual([]);
+  expect(result).toHaveLength(0);
+});
+
+test("getDiscountedPrice calculates correct discounted price", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Book 1", author: "Author 1", genre: "Fiction", price: 100, createdAt: "2025-12-03T00:00:00.000Z" },
+    { id: 2, title: "Book 2", author: "Author 2", genre: "Fiction", price: 50, createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const result = await bookService.getDiscountedPrice("Fiction", 20);
+
+  expect(bookRepo.findByFilter).toHaveBeenCalledWith({ genre: "Fiction" });
+  expect(result).toEqual({
+    genre: "Fiction",
+    discount_percentage: 20,
+    total_discounted_price: 120, // (100 + 50) * 0.8
+  });
+});
+
+test("getDiscountedPrice throws when genre is missing or invalid", async () => {
+  await expect(bookService.getDiscountedPrice("", 20)).rejects.toThrow("Invalid or missing genre");
+  await expect(bookService.getDiscountedPrice("   ", 20)).rejects.toThrow("Invalid or missing genre");
+  await expect(bookService.getDiscountedPrice(null as any, 20)).rejects.toThrow("Invalid or missing genre");
+});
+
+test("getDiscountedPrice throws when discount percent is invalid", async () => {
+  await expect(bookService.getDiscountedPrice("Fiction", -1)).rejects.toThrow("Invalid discount percent");
+  await expect(bookService.getDiscountedPrice("Fiction", 101)).rejects.toThrow("Invalid discount percent");
+  await expect(bookService.getDiscountedPrice("Fiction", NaN)).rejects.toThrow("Invalid discount percent");
+});
+
+test("getDiscountedPrice throws when no books found for genre", async () => {
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue([]);
+
+  await expect(bookService.getDiscountedPrice("NonExistent", 20)).rejects.toThrow("No books found for genre: NonExistent");
+});
+
+test("getDiscountedPrice handles books without price (treats as 0)", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Free Book", author: "Author", genre: "Fiction", createdAt: "2025-12-03T00:00:00.000Z" }, // no price
+    { id: 2, title: "Paid Book", author: "Author", genre: "Fiction", price: 100, createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const result = await bookService.getDiscountedPrice("Fiction", 10);
+
+  expect(result.total_discounted_price).toBe(90); // (0 + 100) * 0.9
+});
+
+test("getDiscountedPrice handles 0% discount", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Book", author: "Author", genre: "Fiction", price: 100, createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const result = await bookService.getDiscountedPrice("Fiction", 0);
+
+  expect(result.total_discounted_price).toBe(100); // no discount
+});
+
+test("getDiscountedPrice handles 100% discount", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Book", author: "Author", genre: "Fiction", price: 100, createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const result = await bookService.getDiscountedPrice("Fiction", 100);
+
+  expect(result.total_discounted_price).toBe(0); // fully discounted
+});
+
+test("getDiscountedPrice trims genre whitespace", async () => {
+  const fakeBooks = [
+    { id: 1, title: "Book", author: "Author", genre: "Fiction", price: 100, createdAt: "2025-12-03T00:00:00.000Z" },
+  ];
+
+  (bookRepo.findByFilter as jest.Mock).mockResolvedValue(fakeBooks);
+
+  const result = await bookService.getDiscountedPrice("  Fiction  ", 20);
+
+  expect(bookRepo.findByFilter).toHaveBeenCalledWith({ genre: "Fiction" });
+  expect(result.genre).toBe("Fiction");
+});

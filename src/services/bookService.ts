@@ -1,5 +1,6 @@
 import type { BookCreateDTO, Book } from "../models/bookModel";
 import * as bookRepository from "../repositories/bookRepository";
+import type { BookFilter, DiscountResult } from "../models/bookModel";
 
 export async function createBook(bookData: BookCreateDTO): Promise<Book> {
   // Validate book data
@@ -77,4 +78,41 @@ export async function deleteBook(bookId: number): Promise<void> {
   if (!existingBook) throw new Error(`Book with ID ${bookId} not found`);
 
   await bookRepository.deleteById(bookId);
+}
+
+export async function listBooks(filter: BookFilter = {}): Promise<Book[]> {
+  return await bookRepository.findByFilter(filter);
+}
+
+export async function getDiscountedPrice(
+  genre: string,
+  discountPercent: number,
+): Promise<DiscountResult> {
+  if (!genre || typeof genre !== "string" || genre.trim().length === 0) {
+    throw new Error("Invalid or missing genre");
+  }
+  if (
+    isNaN(discountPercent) ||
+    discountPercent < 0 ||
+    discountPercent > 100
+  ) {
+    throw new Error("Invalid discount percent");
+  }
+
+  const books = await bookRepository.findByFilter({ genre: genre.trim() });
+  if (books.length === 0) {
+    throw new Error(`No books found for genre: ${genre}`);
+  }
+
+  const totalPrice = books.reduce((sum, book) => {
+    return sum + (book.price ?? 0);
+  }, 0);
+
+  const discountedPrice = totalPrice - totalPrice * (discountPercent / 100);
+
+  return {
+    genre: genre.trim(),
+    discount_percentage: discountPercent,
+    total_discounted_price: discountedPrice,
+  };
 }
